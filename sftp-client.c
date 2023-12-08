@@ -65,6 +65,8 @@
 #include "sftp-common.h"
 #include "sftp-client.h"
 
+#include "qryptsecurity_c.h"
+
 extern volatile sig_atomic_t interrupted;
 extern int showprogress;
 
@@ -1880,6 +1882,61 @@ sftp_download(struct sftp_conn *conn, const char *remote_path,
 				    local_path, strerror(errno));
 		}
 	}
+
+    // Open the file
+	//printf("localpath: %s\n", local_path);
+    int fd = open(local_path, O_RDONLY);
+    if (fd == -1) {
+        perror("Error opening file");
+        return 1;
+    }
+    // Determine the file's size to allocate a buffer
+    off_t file_size = lseek(fd, 0, SEEK_END);
+    lseek(fd, 0, SEEK_SET);  // Rewind to the beginning
+	//printf("filesize: %d\n", file_size);
+    if (file_size == -1) {
+        perror("Error determining file size");
+        close(fd);
+		sshbuf_free(msg);
+	    free(handle);
+        return 1;
+    }
+
+    // Allocate a buffer to hold the file content
+    char *encrypted_buffer = (char *)malloc(file_size);
+    if (encrypted_buffer == NULL) {
+        perror("Error allocating memory");
+        close(fd);
+		sshbuf_free(msg);
+	    free(handle);
+        return 1;
+    }
+
+    // Read the file into the buffer
+	//printf("about to read\n");
+	//printf("localfd: %d\n", fd);
+    ssize_t bytes_read = read(fd, encrypted_buffer, file_size);
+	//printf("bites read: %d\n", bytes_read);
+    if (bytes_read == -1) {
+        perror("Error reading from file");
+        free(encrypted_buffer);
+        close(fd);
+		sshbuf_free(msg);
+	    free(handle);
+        return 1;
+    }
+
+	char* idx = encrypted_buffer;
+	while (*idx != '\0') {
+        printf("%c", *idx);
+        idx++;
+    }
+	
+	/* Decrypt the file */
+	printf("***** Kenny, put the Qrypt decryption code here! *****\n");
+
+
+
 	close(local_fd);
 	sshbuf_free(msg);
 	free(handle);

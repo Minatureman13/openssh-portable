@@ -29,6 +29,10 @@ AC_LANG([C])
 AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC([cc gcc clang])
 
+AC_CHECK_HEADER([qryptsecurity_c.h])
+AC_CHECK_LIB(QryptSecurityC, qrypt_security_initialize)
+AC_CHECK_LIB(QryptSecurityC, qrypt_security_gen_init_otp)
+
 # XXX relax this after reimplementing logit() etc.
 AC_MSG_CHECKING([if $CC supports C99-style variadic macros])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
